@@ -24,23 +24,31 @@ func key(key []byte) [16]byte {
 
 func put(key [16]byte, data []byte) {
 	if v, ok := mq.Load(key); ok {
-		putv(v, data)
+		putv(key, v, data)
 
 		return
 	}
 
-	q := &queue{lock: make(chan bool, 1), data: make([][]byte, 0)}
+	q := newQueue()
 	if v, ok := mq.LoadOrStore(key, q); ok {
-		putv(v, data)
+		putv(key, v, data)
 	} else {
 		putq(q, data)
 	}
 }
 
-func putv(v interface{}, data []byte) {
+func putv(k, v interface{}, data []byte) {
 	if q, ok := v.(*queue); ok {
 		putq(q, data)
+	} else {
+		q := newQueue()
+		mq.Store(k, q)
+		putq(q, data)
 	}
+}
+
+func newQueue() *queue {
+	return &queue{lock: make(chan bool, 1), data: make([][]byte, 0)}
 }
 
 func putq(q *queue, data []byte) {
@@ -60,6 +68,8 @@ func get(key [16]byte) (data []byte) {
 			}
 			q.time = time.Now()
 			<-q.lock
+		} else {
+			mq.Delete(key)
 		}
 	}
 
