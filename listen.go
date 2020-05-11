@@ -6,6 +6,7 @@ import (
 
 var host = ":9371"
 var buffer = make([]byte, 64*1024)
+var listenID = []byte(newID())
 
 func listen() error {
 	addr, err := net.ResolveUDPAddr("udp", host)
@@ -28,9 +29,6 @@ func listen() error {
 			continue
 		}
 
-		go receive(a, buffer[:n])
+		go receive(conn, a, buffer[:n])
 	}
-}
-
-func receive(addr *net.UDPAddr, b []byte) {
 }

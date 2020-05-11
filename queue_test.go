@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"sync"
 	"testing"
+	"time"
 )
 
 func TestMQ(t *testing.T) {
@@ -52,5 +53,15 @@ func TestMQ(t *testing.T) {
 		if ns[i] != 1 {
 			t.Errorf("fail %d %d!=1\n", i, ns[i])
 		}
+	}
+
+	queueOverdueDuration = 2 * time.Second
+	if _, ok := mq.Load(key); !ok {
+		t.Errorf("key not exists\n")
+	}
+
+	time.Sleep(3 * time.Second)
+	if _, ok := mq.Load(key); ok {
+		t.Errorf("key exists\n")
 	}
 }

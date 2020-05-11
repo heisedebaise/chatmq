@@ -13,6 +13,7 @@ type queue struct {
 }
 
 var mq sync.Map
+var queueOverdueDuration = time.Minute
 
 func skey(skey string) [16]byte {
 	return key([]byte(skey))
@@ -48,13 +49,12 @@ func putv(k, v interface{}, data []byte) {
 }
 
 func newQueue() *queue {
-	return &queue{lock: make(chan bool, 1), data: make([][]byte, 0)}
+	return &queue{lock: make(chan bool, 1), data: make([][]byte, 0), time: time.Now()}
 }
 
 func putq(q *queue, data []byte) {
 	q.lock <- true
 	q.data = append(q.data, data)
-	q.time = time.Now()
 	<-q.lock
 }
 
@@ -74,4 +74,20 @@ func get(key [16]byte) (data []byte) {
 	}
 
 	return
+}
+
+//QueueOverdue set queue overdue duration.
+func QueueOverdue(duration time.Duration) {
+	queueOverdueDuration = duration
+}
+
+func queueOverdue() {
+	t := time.Now().Add(-queueOverdueDuration)
+	mq.Range(func(key, value interface{}) bool {
+		if q, ok := value.(*queue); ok && q.time.Before(t) {
+			mq.Delete(key)
+		}
+
+		return true
+	})
 }
