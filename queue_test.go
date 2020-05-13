@@ -10,14 +10,14 @@ import (
 
 func TestMQ(t *testing.T) {
 	key := bkey([]byte("chatmq"))
-	if data := get(key); len(data) > 0 {
+	if ok, data := get(key); ok || len(data) > 0 {
 		t.Errorf("not empty %v\n", data)
 	}
 	put(key, []byte("chat mq"))
-	if data := get(key); !bytes.Equal(data, []byte("chat mq")) {
+	if ok, data := get(key); !ok || !bytes.Equal(data, []byte("chat mq")) {
 		t.Errorf("get fail %s \n", string(data))
 	}
-	if data := get(key); len(data) > 0 {
+	if ok, data := get(key); ok || len(data) > 0 {
 		t.Errorf("not empty %v\n", data)
 	}
 
@@ -36,8 +36,7 @@ func TestMQ(t *testing.T) {
 	for i := 0; i < size; i++ {
 		go func() {
 			for {
-				data := get(key)
-				if len(data) > 5 {
+				if ok, data := get(key); ok && len(data) > 5 {
 					if n, err := strconv.Atoi(string(data[5:])); err == nil {
 						ns[n]++
 					}

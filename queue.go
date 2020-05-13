@@ -58,11 +58,12 @@ func putq(q *queue, data []byte) {
 	<-q.lock
 }
 
-func get(key [16]byte) (data []byte) {
-	if v, ok := mq.Load(key); ok {
-		if q, ok := v.(*queue); ok {
+func get(key [16]byte) (ok bool, data []byte) {
+	if v, o := mq.Load(key); o {
+		if q, o := v.(*queue); o {
 			q.lock <- true
 			if len(q.data) > 0 {
+				ok = true
 				data = q.data[0]
 				q.data = q.data[1:]
 			}
