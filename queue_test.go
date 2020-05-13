@@ -9,7 +9,7 @@ import (
 )
 
 func TestMQ(t *testing.T) {
-	key := key([]byte("chatmq"))
+	key := bkey([]byte("chatmq"))
 	if data := get(key); len(data) > 0 {
 		t.Errorf("not empty %v\n", data)
 	}

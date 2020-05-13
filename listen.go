@@ -4,11 +4,10 @@ import (
 	"net"
 )
 
-var host = ":9371"
 var buffer = make([]byte, 64*1024)
-var listenID = []byte(newID())
+var listenID = newID()
 
-func listen() error {
+func listen(host string) error {
 	addr, err := net.ResolveUDPAddr("udp", host)
 	if err != nil {
 		return err
@@ -20,7 +19,7 @@ func listen() error {
 	}
 	defer conn.Close()
 
-	logf("chatmq listening on %s\n", host)
+	logf("listening on %s\n", host)
 	for {
 		n, a, err := conn.ReadFromUDP(buffer)
 		if n <= 0 || err != nil {

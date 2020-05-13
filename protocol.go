@@ -20,8 +20,8 @@ const (
 
 var emptyKey [16]byte
 
-func newID() string {
-	return uuid.New().String()
+func newID() []byte {
+	return []byte(uuid.New().String())
 }
 
 func getID(b []byte) []byte {
@@ -46,11 +46,15 @@ func getKey(b []byte) (key [16]byte) {
 	return
 }
 
+func getData(b []byte) []byte {
+	return b[keyEnd:]
+}
+
 func pack(id, data []byte, size, index uint32, method byte, key [16]byte) []byte {
 	var buffer bytes.Buffer
 	buffer.Write(id)
-	buffer.Write(uint2byte(size))
-	buffer.Write(uint2byte(index))
+	buffer.Write(uint32byte(size))
+	buffer.Write(uint32byte(index))
 	buffer.WriteByte(method)
 	buffer.Write(key[:])
 	buffer.Write(data)
@@ -58,7 +62,7 @@ func pack(id, data []byte, size, index uint32, method byte, key [16]byte) []byte
 	return buffer.Bytes()
 }
 
-func uint2byte(ui uint32) []byte {
+func uint32byte(ui uint32) []byte {
 	b := make([]byte, 4)
 	binary.BigEndian.PutUint32(b, ui)
 

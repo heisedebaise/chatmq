@@ -16,10 +16,10 @@ var mq sync.Map
 var queueOverdueDuration = time.Minute
 
 func skey(skey string) [16]byte {
-	return key([]byte(skey))
+	return bkey([]byte(skey))
 }
 
-func key(key []byte) [16]byte {
+func bkey(key []byte) [16]byte {
 	return md5.Sum(key)
 }
 
@@ -76,8 +76,8 @@ func get(key [16]byte) (data []byte) {
 	return
 }
 
-//QueueOverdue set queue overdue duration.
-func QueueOverdue(duration time.Duration) {
+//Overdue set queue overdue duration.
+func Overdue(duration time.Duration) {
 	queueOverdueDuration = duration
 }
 

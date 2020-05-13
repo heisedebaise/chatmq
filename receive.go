@@ -54,7 +54,7 @@ func receive(conn *net.UDPConn, addr *net.UDPAddr, b []byte) {
 	sid := string(id)
 	size := getSize(decrypt)
 	rd := getReceiveData(sid, size)
-	done := rd.put(getIndex(decrypt), decrypt[keyEnd:])
+	done := rd.put(getIndex(decrypt), getData(decrypt))
 	if !done {
 		return
 	}
