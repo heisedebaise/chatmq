@@ -1,8 +1,8 @@
 package chatmq
 
 //Cluster cluster.
-func Cluster(host, key string, nodes []string) error {
-	cryptKey = key
+func Cluster(host, secret string, nodes []string) error {
+	cryptKey = secret
 	setNodes(nodes)
 
 	return listen(host)
