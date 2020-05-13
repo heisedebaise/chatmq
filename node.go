@@ -2,12 +2,13 @@ package chatmq
 
 import (
 	"bytes"
-	"log"
 	"net"
 	"sync"
+	"time"
 )
 
 var nodes sync.Map
+var checkTimeout = 2 * time.Second
 
 type node struct {
 	addr  *net.UDPAddr
@@ -26,15 +27,22 @@ func (n *node) check() {
 		return
 	}
 
+	n.state = 3
 	n.conn.WriteToUDP(e, n.addr)
 	buffer := make([]byte, bufferSize)
+	n.conn.SetReadDeadline(time.Now().Add(checkTimeout))
 	c, _, err := n.conn.ReadFromUDP(buffer)
 	if err != nil {
+		n.state = 0
+		logf("read from udp %v timeout %v fail %v\n", n.addr, checkTimeout, err)
+
 		return
 	}
 
 	d, err := decrypt(buffer[:c])
 	if err != nil || len(d) < minLength || getMethod(d) != 0 || !bytes.Equal(getID(d), id) {
+		n.state = 0
+
 		return
 	}
 
@@ -52,7 +60,7 @@ func (n *node) send(key [16]byte, data []byte) {
 
 	if _, err := send(n.conn, n.addr, newID(), data, 1, key); err != nil {
 		n.state = 0
-		log.Printf("send udp to %v fail %v\n", n.addr, err)
+		logf("send udp to %v fail %v\n", n.addr, err)
 	}
 }
 
@@ -99,4 +107,9 @@ func nodeState() {
 
 		return true
 	})
+}
+
+//CheckTimeout check timeout.
+func CheckTimeout(duration time.Duration) {
+	checkTimeout = duration
 }
