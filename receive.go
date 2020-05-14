@@ -42,11 +42,15 @@ func (rd *receiveData) get() []byte {
 func receive(conn *net.UDPConn, addr *net.UDPAddr, b []byte) {
 	decrypt, err := decrypt(b)
 	if err != nil {
+		logf("decrypt fail %v", err)
+
 		return
 	}
 
 	length := len(decrypt)
 	if length < minLength {
+		logf("illegal length %d<%d", length, minLength)
+		
 		return
 	}
 

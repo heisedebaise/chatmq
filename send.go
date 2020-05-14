@@ -20,7 +20,6 @@ func send(conn *net.UDPConn, addr *net.UDPAddr, id, data []byte, method byte, ke
 			max = length
 		}
 		n, err := sendTo(conn, addr, id, data[i*dataMaxSize:max], size, i, method, key)
-		logf("send to udp %v %d %v\n", addr, n, err)
 		if err != nil {
 			return i*dataMaxSize + n, err
 		}
@@ -33,8 +32,13 @@ func sendTo(conn *net.UDPConn, addr *net.UDPAddr, id, data []byte, size, index i
 	p := pack(id, data, uint32(size), uint32(index), method, key)
 	e, err := encrypt(p)
 	if err != nil {
+		logf("encrypt fail %v", err)
+
 		return 0, err
 	}
 
-	return conn.WriteToUDP(e, addr)
+	n, err := conn.WriteToUDP(e, addr)
+	logf("send to udp %v %d %v", addr, n, err)
+
+	return n, err
 }

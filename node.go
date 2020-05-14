@@ -36,7 +36,7 @@ func (n *node) ping() {
 	buffer := make([]byte, minLength<<1)
 	n.conn.SetReadDeadline(time.Now().Add(checkTimeout))
 	c, addr, err := n.conn.ReadFromUDP(buffer)
-	logf("ping udp %v %v %v %d %v\n", n.addr, checkTimeout, addr, c, err)
+	logf("ping udp %v %v %v %d %v", n.addr, checkTimeout, addr, c, err)
 	if err != nil {
 		n.state = 0
 
@@ -68,7 +68,7 @@ func (n *node) send(key [16]byte, data []byte) {
 
 	if _, err := send(n.conn, n.addr, newID(), data, 1, key); err != nil {
 		n.state = 0
-		logf("send udp to %v fail %v\n", n.addr, err)
+		logf("send udp to %v fail %v", n.addr, err)
 	}
 }
 
@@ -77,14 +77,14 @@ func setNodes(hosts []string) {
 	for _, host := range hosts {
 		addr, err := net.ResolveUDPAddr("udp", host)
 		if err != nil {
-			logf("resolve udp addr %s fail %v\n", host, err)
+			logf("resolve udp addr %s fail %v", host, err)
 
 			continue
 		}
 
 		conn, err := net.ListenUDP("udp", &net.UDPAddr{IP: net.IPv4zero, Port: 0})
 		if err != nil {
-			logf("dial udp %s fail %v\n", host, err)
+			logf("dial udp %s fail %v", host, err)
 
 			continue
 		}

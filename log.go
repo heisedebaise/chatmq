@@ -5,5 +5,5 @@ import (
 )
 
 func logf(format string, v ...interface{}) {
-	log.Printf("chatmq: "+format, v...)
+	log.Printf("chatmq: "+format+"\n", v...)
 }
