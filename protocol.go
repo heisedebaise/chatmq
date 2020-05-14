@@ -15,7 +15,7 @@ const (
 	methodEnd   = indexEnd + 1
 	keyEnd      = methodEnd + 16
 	minLength   = keyEnd
-	dataMaxSize = bufferSize - cryptSize - minLength
+	dataMaxSize = bufferSize - cryptSize - minLength - 16
 )
 
 var emptyKey [16]byte

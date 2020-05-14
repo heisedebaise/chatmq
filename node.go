@@ -13,11 +13,12 @@ var checkTimeout = 2 * time.Second
 type node struct {
 	addr  *net.UDPAddr
 	conn  *net.UDPConn
-	state int
+	lock  chan bool
+	state int // 0-unready;1-ready;2-self;3-checking
 }
 
 func (n *node) check() {
-	if n.state > 0 {
+	if n.state > 0 || len(n.lock) > 0 {
 		return
 	}
 
@@ -27,13 +28,18 @@ func (n *node) check() {
 		return
 	}
 
+	n.lock <- true
+	defer func() { <-n.lock }()
+
 	n.state = 3
 	n.conn.WriteToUDP(e, n.addr)
 	buffer := make([]byte, bufferSize)
 	n.conn.SetReadDeadline(time.Now().Add(checkTimeout))
 	c, _, err := n.conn.ReadFromUDP(buffer)
 	if err != nil {
-		n.state = 0
+		if n.state == 3 {
+			n.state = 0
+		}
 		logf("read from udp %v timeout %v fail %v\n", n.addr, checkTimeout, err)
 
 		return
@@ -41,7 +47,9 @@ func (n *node) check() {
 
 	d, err := decrypt(buffer[:c])
 	if err != nil || len(d) < minLength || getMethod(d) != 0 || !bytes.Equal(getID(d), id) {
-		n.state = 0
+		if n.state == 3 {
+			n.state = 0
+		}
 
 		return
 	}
@@ -57,6 +65,9 @@ func (n *node) send(key [16]byte, data []byte) {
 	if n.state != 1 {
 		return
 	}
+
+	n.lock <- true
+	defer func() { <-n.lock }()
 
 	if _, err := send(n.conn, n.addr, newID(), data, 1, key); err != nil {
 		n.state = 0
@@ -81,7 +92,7 @@ func setNodes(hosts []string) {
 			continue
 		}
 
-		node := &node{addr, conn, 0}
+		node := &node{addr, conn, make(chan bool, 1), 0}
 		nodes.Store(host, node)
 		m[host] = true
 	}

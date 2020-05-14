@@ -28,6 +28,8 @@ func listen(host string) error {
 			continue
 		}
 
-		go receive(conn, a, buffer[:n])
+		data := make([]byte, n)
+		copy(data, buffer)
+		go receive(conn, a, data)
 	}
 }
