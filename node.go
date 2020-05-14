@@ -14,11 +14,12 @@ type node struct {
 	addr  *net.UDPAddr
 	conn  *net.UDPConn
 	lock  chan bool
-	state int // 0-unready;1-ready;2-self;3-checking
+	state int // 0-unready;1-ready;2-self
+	time  time.Time
 }
 
-func (n *node) check() {
-	if n.state > 0 || len(n.lock) > 0 {
+func (n *node) ping() {
+	if n.state == 2 || len(n.lock) > 0 || (n.state == 1 && n.time.Add(time.Minute).After(time.Now())) {
 		return
 	}
 
@@ -31,25 +32,20 @@ func (n *node) check() {
 	n.lock <- true
 	defer func() { <-n.lock }()
 
-	n.state = 3
 	n.conn.WriteToUDP(e, n.addr)
 	buffer := make([]byte, minLength<<1)
 	n.conn.SetReadDeadline(time.Now().Add(checkTimeout))
 	c, addr, err := n.conn.ReadFromUDP(buffer)
-	logf("read from udp %v %v %v %d %v\n", n.addr, checkTimeout, addr, c, err)
+	logf("ping udp %v %v %v %d %v\n", n.addr, checkTimeout, addr, c, err)
 	if err != nil {
-		if n.state == 3 {
-			n.state = 0
-		}
+		n.state = 0
 
 		return
 	}
 
 	d, err := decrypt(buffer[:c])
 	if err != nil || len(d) < minLength || getMethod(d) != 0 || !bytes.Equal(getID(d), id) {
-		if n.state == 3 {
-			n.state = 0
-		}
+		n.state = 0
 
 		return
 	}
@@ -59,6 +55,7 @@ func (n *node) check() {
 	} else {
 		n.state = 1
 	}
+	n.time = time.Now()
 }
 
 func (n *node) send(key [16]byte, data []byte) {
@@ -92,7 +89,7 @@ func setNodes(hosts []string) {
 			continue
 		}
 
-		node := &node{addr, conn, make(chan bool, 1), 0}
+		node := &node{addr, conn, make(chan bool, 1), 0, time.Now().Add(-time.Minute)}
 		nodes.Store(host, node)
 		m[host] = true
 	}
@@ -108,10 +105,10 @@ func setNodes(hosts []string) {
 	})
 }
 
-func nodeState() {
+func ping() {
 	nodes.Range(func(key, value interface{}) bool {
 		if node, ok := value.(*node); ok {
-			go node.check()
+			go node.ping()
 		} else {
 			nodes.Delete(key.(string))
 		}

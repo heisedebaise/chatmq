@@ -10,7 +10,7 @@ func init() {
 			time.Sleep(time.Second)
 			queueOverdue()
 			receiveOverdue()
-			nodeState()
+			ping()
 		}
 	}()
 }
