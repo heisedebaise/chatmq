@@ -22,13 +22,11 @@ func listen(host string) error {
 	logf("listening on %s\n", host)
 	for {
 		n, a, err := conn.ReadFromUDP(buffer)
+		logf("read from udp %v %d %v\n", a, n, err)
 		if n <= 0 || err != nil {
-			logf("read from udp %v fail %d %v\n", a, n, err)
-
 			continue
 		}
 
-		logf("read from udp %v %d\n", a, n)
 		data := make([]byte, n)
 		copy(data, buffer)
 		go receive(conn, a, data)

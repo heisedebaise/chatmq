@@ -33,14 +33,14 @@ func (n *node) check() {
 
 	n.state = 3
 	n.conn.WriteToUDP(e, n.addr)
-	buffer := make([]byte, bufferSize)
+	buffer := make([]byte, minLength<<1)
 	n.conn.SetReadDeadline(time.Now().Add(checkTimeout))
-	c, _, err := n.conn.ReadFromUDP(buffer)
+	c, addr, err := n.conn.ReadFromUDP(buffer)
+	logf("read from udp %v %v %v %d %v\n", n.addr, checkTimeout, addr, c, err)
 	if err != nil {
 		if n.state == 3 {
 			n.state = 0
 		}
-		logf("read from udp %v timeout %v fail %v\n", n.addr, checkTimeout, err)
 
 		return
 	}
