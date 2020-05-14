@@ -19,7 +19,9 @@ func send(conn *net.UDPConn, addr *net.UDPAddr, id, data []byte, method byte, ke
 		if max > length {
 			max = length
 		}
-		if n, err := sendTo(conn, addr, id, data[i*dataMaxSize:max], size, i, method, key); err != nil {
+		n, err := sendTo(conn, addr, id, data[i*dataMaxSize:max], size, i, method, key)
+		logf("send to udp %v %d %v\n", addr, length, err)
+		if err != nil {
 			return i*dataMaxSize + n, err
 		}
 	}

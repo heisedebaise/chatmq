@@ -28,6 +28,7 @@ func listen(host string) error {
 			continue
 		}
 
+		logf("read from udp %v %d\n", a, n)
 		data := make([]byte, n)
 		copy(data, buffer)
 		go receive(conn, a, data)

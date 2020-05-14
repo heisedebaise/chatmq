@@ -24,6 +24,7 @@ func TestSendReceive(t *testing.T) {
 	key := []byte("key")
 	testSendReceive(key, bufferSize>>1, t)
 	testSendReceive(key, bufferSize, t)
+	testSendReceive(key, bufferSize<<1, t)
 }
 
 func testSendReceive(key []byte, size int, t *testing.T) {
