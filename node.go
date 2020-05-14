@@ -56,6 +56,7 @@ func (n *node) ping() {
 		n.state = 1
 	}
 	n.time = time.Now()
+	logf("ping udp %v %d %v", n.addr, n.state, n.time)
 }
 
 func (n *node) send(key [16]byte, data []byte) {
