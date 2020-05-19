@@ -19,10 +19,10 @@ func listen(host string) error {
 	}
 	defer conn.Close()
 
-	logf("listening on %s", host)
+	logf(LogLevelInfo, "listening on %s", host)
 	for {
 		n, a, err := conn.ReadFromUDP(buffer)
-		logf("read from udp %v %d %v", a, n, err)
+		logf(LogLevelDebug, "read from udp %v %d %v", a, n, err)
 		if n <= 0 || err != nil {
 			continue
 		}

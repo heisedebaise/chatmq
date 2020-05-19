@@ -9,7 +9,7 @@ import (
 
 func TestSendReceive(t *testing.T) {
 	go Cluster(":9371", "secret key", []string{":9371"})
-	time.Sleep(time.Second)
+	time.Sleep(2 * time.Second)
 
 	nodes.Range(func(key, value interface{}) bool {
 		if node, ok := value.(*node); ok {
@@ -22,12 +22,12 @@ func TestSendReceive(t *testing.T) {
 	})
 
 	key := []byte("key")
-	testSendReceive(key, bufferSize>>1, t)
-	testSendReceive(key, bufferSize, t)
-	testSendReceive(key, bufferSize<<1, t)
+	testSendReceive(key, bufferSize>>1, time.Second, t)
+	testSendReceive(key, bufferSize, time.Second<<1, t)
+	testSendReceive(key, bufferSize<<1, time.Second<<2, t)
 }
 
-func testSendReceive(key []byte, size int, t *testing.T) {
+func testSendReceive(key []byte, size int, sleep time.Duration, t *testing.T) {
 	rand.Seed(time.Now().UnixNano())
 	data := make([]byte, 0)
 	for i := 0; i < size; i++ {
@@ -35,7 +35,7 @@ func testSendReceive(key []byte, size int, t *testing.T) {
 	}
 
 	Put(key, data)
-	time.Sleep(time.Second)
+	time.Sleep(sleep)
 	for i := 0; i < 2; i++ {
 		if d, ok := Get(key); !ok || !bytes.Equal(d, data) {
 			t.Errorf("illegal data %d %t %d %d\n", i, ok, len(data), len(d))

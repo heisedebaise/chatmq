@@ -22,35 +22,38 @@ func (rd *receiveData) put(index uint32, b []byte) (done bool) {
 	rd.index++
 	done = rd.index == len(rd.data)
 	<-rd.lock
+	logf(LogLevelDebug, "receive data %t %d/%d %d", done, index, len(rd.data), len(b))
 
 	return
 }
 
-func (rd *receiveData) get() []byte {
+func (rd *receiveData) get() (data []byte) {
 	if rd.index == 1 {
-		return rd.data[0]
+		data = rd.data[0]
+	} else {
+		var buffer bytes.Buffer
+		for _, data := range rd.data {
+			buffer.Write(data)
+		}
+		data = buffer.Bytes()
 	}
+	logf(LogLevelDebug, "get receive data %d %d", rd.index, len(rd.data[0]))
 
-	var buffer bytes.Buffer
-	for _, data := range rd.data {
-		buffer.Write(data)
-	}
-
-	return buffer.Bytes()
+	return
 }
 
 func receive(conn *net.UDPConn, addr *net.UDPAddr, b []byte) {
 	decrypt, err := decrypt(b)
 	if err != nil {
-		logf("decrypt fail %v", err)
+		logf(LogLevelWarn, "decrypt fail %v", err)
 
 		return
 	}
 
 	length := len(decrypt)
 	if length < minLength {
-		logf("illegal length %d<%d", length, minLength)
-		
+		logf(LogLevelWarn, "illegal length %d<%d", length, minLength)
+
 		return
 	}
 

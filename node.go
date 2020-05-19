@@ -8,7 +8,7 @@ import (
 )
 
 var nodes sync.Map
-var checkTimeout = 2 * time.Second
+var pingTimeout = 2 * time.Second
 
 type node struct {
 	addr  *net.UDPAddr
@@ -34,9 +34,9 @@ func (n *node) ping() {
 
 	n.conn.WriteToUDP(e, n.addr)
 	buffer := make([]byte, minLength<<1)
-	n.conn.SetReadDeadline(time.Now().Add(checkTimeout))
+	n.conn.SetReadDeadline(time.Now().Add(pingTimeout))
 	c, addr, err := n.conn.ReadFromUDP(buffer)
-	logf("ping udp %v %v %v %d %v", n.addr, checkTimeout, addr, c, err)
+	logf(LogLevelDebug, "ping udp %v %v %v %d %v", n.addr, pingTimeout, addr, c, err)
 	if err != nil {
 		n.state = 0
 
@@ -56,7 +56,7 @@ func (n *node) ping() {
 		n.state = 1
 	}
 	n.time = time.Now()
-	logf("ping udp %v %d %v", n.addr, n.state, n.time)
+	logf(LogLevelInfo, "ping udp %v %d %v", n.addr, n.state, n.time)
 }
 
 func (n *node) send(key [16]byte, data []byte) {
@@ -69,7 +69,7 @@ func (n *node) send(key [16]byte, data []byte) {
 
 	if _, err := send(n.conn, n.addr, newID(), data, 1, key); err != nil {
 		n.state = 0
-		logf("send udp to %v fail %v", n.addr, err)
+		logf(LogLevelWarn, "send udp to %v fail %v", n.addr, err)
 	}
 }
 
@@ -78,14 +78,14 @@ func setNodes(hosts []string) {
 	for _, host := range hosts {
 		addr, err := net.ResolveUDPAddr("udp", host)
 		if err != nil {
-			logf("resolve udp addr %s fail %v", host, err)
+			logf(LogLevelWarn, "resolve udp addr %s fail %v", host, err)
 
 			continue
 		}
 
 		conn, err := net.ListenUDP("udp", &net.UDPAddr{IP: net.IPv4zero, Port: 0})
 		if err != nil {
-			logf("dial udp %s fail %v", host, err)
+			logf(LogLevelWarn, "dial udp %s fail %v", host, err)
 
 			continue
 		}
@@ -118,7 +118,7 @@ func ping() {
 	})
 }
 
-//CheckTimeout check timeout.
-func CheckTimeout(duration time.Duration) {
-	checkTimeout = duration
+//PingTimeout ping timeout.
+func PingTimeout(duration time.Duration) {
+	pingTimeout = duration
 }
