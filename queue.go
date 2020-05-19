@@ -20,10 +20,7 @@ func skey(skey string) [16]byte {
 }
 
 func bkey(key []byte) [16]byte {
-	k := md5.Sum(key)
-	logf(LogLevelDebug, "key %v => %v", key, k)
-
-	return k
+	return md5.Sum(key)
 }
 
 func put(key [16]byte, data []byte) {
@@ -77,8 +74,6 @@ func get(key [16]byte) (data []byte, ok bool) {
 			mq.Delete(key)
 		}
 	}
-
-	logf(LogLevelDebug, "get %t %v %d", ok, key, len(data))
 
 	return
 }
