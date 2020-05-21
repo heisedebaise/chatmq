@@ -14,6 +14,11 @@ func SetNotice(key string, notice Notice) {
 	notices.Store(skey(key), notice)
 }
 
+//DeleteNotice delete notice.
+func DeleteNotice(key string) {
+	notices.Delete(skey(key))
+}
+
 //SendNotice send notice to other nodes.
 func SendNotice(key string, data []byte) {
 	sends(methodNotice, skey(key), data)

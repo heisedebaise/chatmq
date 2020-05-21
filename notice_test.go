@@ -35,4 +35,11 @@ func TestNotice(t *testing.T) {
 	if data != "notice data" {
 		t.Errorf("illegal data %s\n", data)
 	}
+
+	DeleteNotice("notice key")
+	SendNotice("notice key", []byte("notice-data"))
+	time.Sleep(time.Second)
+	if data != "notice data" {
+		t.Errorf("illegal data %s\n", data)
+	}
 }
