@@ -24,7 +24,7 @@ func (n *node) ping() {
 	}
 
 	id := newID()
-	e, err := encrypt(pack(id, []byte{}, 0, 0, 0, emptyKey))
+	e, err := encrypt(pack(id, []byte{}, 0, 0, methodPing, emptyKey))
 	if err != nil {
 		return
 	}
@@ -59,7 +59,7 @@ func (n *node) ping() {
 	logf(LogLevelInfo, "ping udp %v %d %v", n.addr, n.state, n.time)
 }
 
-func (n *node) send(key [16]byte, data []byte) {
+func (n *node) send(m method, key [16]byte, data []byte) {
 	if n.state != 1 {
 		return
 	}
@@ -67,7 +67,7 @@ func (n *node) send(key [16]byte, data []byte) {
 	n.lock <- true
 	defer func() { <-n.lock }()
 
-	if _, err := send(n.conn, n.addr, newID(), data, 1, key); err != nil {
+	if _, err := send(n.conn, n.addr, newID(), data, m, key); err != nil {
 		n.state = 0
 		logf(LogLevelWarn, "send udp to %v fail %v", n.addr, err)
 	}
@@ -121,4 +121,14 @@ func ping() {
 //PingTimeout ping timeout.
 func PingTimeout(duration time.Duration) {
 	pingTimeout = duration
+}
+
+func sends(m method, key [16]byte, data []byte) {
+	nodes.Range(func(k, v interface{}) bool {
+		if node, ok := v.(*node); ok {
+			node.send(m, key, data)
+		}
+
+		return true
+	})
 }

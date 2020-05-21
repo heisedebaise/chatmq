@@ -4,10 +4,10 @@ import (
 	"net"
 )
 
-func send(conn *net.UDPConn, addr *net.UDPAddr, id, data []byte, method byte, key [16]byte) (int, error) {
+func send(conn *net.UDPConn, addr *net.UDPAddr, id, data []byte, m method, key [16]byte) (int, error) {
 	length := len(data)
 	if length <= dataMaxSize {
-		return sendTo(conn, addr, id, data, 0, 0, method, key)
+		return sendTo(conn, addr, id, data, 0, 0, m, key)
 	}
 
 	size := length / dataMaxSize
@@ -19,7 +19,7 @@ func send(conn *net.UDPConn, addr *net.UDPAddr, id, data []byte, method byte, ke
 		if max > length {
 			max = length
 		}
-		n, err := sendTo(conn, addr, id, data[i*dataMaxSize:max], size, i, method, key)
+		n, err := sendTo(conn, addr, id, data[i*dataMaxSize:max], size, i, m, key)
 		if err != nil {
 			return i*dataMaxSize + n, err
 		}
@@ -28,8 +28,8 @@ func send(conn *net.UDPConn, addr *net.UDPAddr, id, data []byte, method byte, ke
 	return length, nil
 }
 
-func sendTo(conn *net.UDPConn, addr *net.UDPAddr, id, data []byte, size, index int, method byte, key [16]byte) (int, error) {
-	p := pack(id, data, uint32(size), uint32(index), method, key)
+func sendTo(conn *net.UDPConn, addr *net.UDPAddr, id, data []byte, size, index int, m method, key [16]byte) (int, error) {
+	p := pack(id, data, uint32(size), uint32(index), m, key)
 	e, err := encrypt(p)
 	if err != nil {
 		logf(LogLevelWarn, "encrypt fail %v", err)

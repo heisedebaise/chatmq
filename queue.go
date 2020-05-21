@@ -1,7 +1,6 @@
 package chatmq
 
 import (
-	"crypto/md5"
 	"sync"
 	"time"
 )
@@ -15,12 +14,17 @@ type queue struct {
 var mq sync.Map
 var queueOverdueDuration = time.Minute
 
-func skey(skey string) [16]byte {
-	return bkey([]byte(skey))
-}
+//Put put.
+func Put(key, data []byte) {
+	bk := bkey(key)
+	put(bk, data)
+	nodes.Range(func(k, v interface{}) bool {
+		if node, ok := v.(*node); ok {
+			node.send(methodPut, bk, data)
+		}
 
-func bkey(key []byte) [16]byte {
-	return md5.Sum(key)
+		return true
+	})
 }
 
 func put(key [16]byte, data []byte) {
@@ -57,6 +61,11 @@ func putq(q *queue, data []byte) {
 	q.lock <- true
 	q.data = append(q.data, data)
 	<-q.lock
+}
+
+//Get get.
+func Get(key []byte) ([]byte, bool) {
+	return get(bkey(key))
 }
 
 func get(key [16]byte) (data []byte, ok bool) {

@@ -9,7 +9,7 @@ import (
 
 func TestSendReceive(t *testing.T) {
 	go Cluster(":9371", "secret key", []string{":9371"})
-	time.Sleep(2 * time.Second)
+	time.Sleep(time.Second)
 
 	nodes.Range(func(key, value interface{}) bool {
 		if node, ok := value.(*node); ok {

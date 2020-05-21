@@ -67,10 +67,12 @@ func receive(conn *net.UDPConn, addr *net.UDPAddr, b []byte) {
 	}
 
 	switch getMethod(decrypt) {
-	case 0:
+	case methodPing:
 		send(conn, addr, id, listenID, 0, emptyKey)
-	case 1:
+	case methodPut:
 		put(getKey(decrypt), rd.get())
+	case methodNotice:
+		notice(getKey(decrypt), rd.get())
 	}
 
 	if size > 1 {

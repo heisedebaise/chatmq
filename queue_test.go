@@ -64,3 +64,16 @@ func TestMQ(t *testing.T) {
 		t.Errorf("key exists\n")
 	}
 }
+
+func TestPutGet(t *testing.T) {
+	skey := "chatmq key"
+	bkey := []byte(skey)
+	if data, ok := Get(bkey); ok || len(data) != 0 {
+		t.Errorf("get not empty data\n")
+	}
+
+	Put(bkey, []byte("data"))
+	if data, ok := Get(bkey); !ok || !bytes.Equal(data, []byte("data")) {
+		t.Errorf("get data not equals\n")
+	}
+}
