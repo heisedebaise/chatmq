@@ -9,7 +9,7 @@ import (
 )
 
 func TestMQ(t *testing.T) {
-	key := bkey([]byte("chatmq"))
+	key := skey("chatmq")
 	if data, ok := get(key); ok || len(data) > 0 {
 		t.Errorf("not empty %v\n", data)
 	}
@@ -66,14 +66,21 @@ func TestMQ(t *testing.T) {
 }
 
 func TestPutGet(t *testing.T) {
-	skey := "chatmq key"
-	bkey := []byte(skey)
-	if data, ok := Get(bkey); ok || len(data) != 0 {
-		t.Errorf("get not empty data\n")
+	type data struct {
+		Key   string
+		Value string
 	}
 
-	Put(bkey, []byte("data"))
-	if data, ok := Get(bkey); !ok || !bytes.Equal(data, []byte("data")) {
-		t.Errorf("get data not equals\n")
+	d := data{}
+	if Get("key", &d) || d.Key != "" || d.Value != "" {
+		t.Errorf("get not empty data %v\n", d)
+	}
+
+	Put("key", data{"key", "value"})
+	if !Get("key", &d) {
+		t.Errorf("get no data\n")
+	}
+	if d.Key != "key" || d.Value != "value" {
+		t.Errorf("get illegal data %v\n", d)
 	}
 }

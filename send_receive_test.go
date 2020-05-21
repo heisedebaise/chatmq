@@ -21,24 +21,22 @@ func TestSendReceive(t *testing.T) {
 		return true
 	})
 
-	key := []byte("key")
+	key := skey("key")
 	testSendReceive(key, bufferSize>>1, time.Second, t)
 	testSendReceive(key, bufferSize, time.Second<<1, t)
 	testSendReceive(key, bufferSize<<1, time.Second<<2, t)
 }
 
-func testSendReceive(key []byte, size int, sleep time.Duration, t *testing.T) {
+func testSendReceive(key [16]byte, size int, sleep time.Duration, t *testing.T) {
 	rand.Seed(time.Now().UnixNano())
 	data := make([]byte, 0)
 	for i := 0; i < size; i++ {
 		data = append(data, byte(rand.Intn(0xff)))
 	}
 
-	Put(key, data)
+	sends(methodPut, key, data)
 	time.Sleep(sleep)
-	for i := 0; i < 2; i++ {
-		if d, ok := Get(key); !ok || !bytes.Equal(d, data) {
-			t.Errorf("illegal data %d %t %d %d\n", i, ok, len(data), len(d))
-		}
+	if d, ok := get(key); !ok || !bytes.Equal(d, data) {
+		t.Errorf("illegal data %t %d %d\n", ok, len(data), len(d))
 	}
 }

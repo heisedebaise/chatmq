@@ -124,8 +124,8 @@ func PingTimeout(duration time.Duration) {
 }
 
 func sends(m method, key [16]byte, data []byte) {
-	nodes.Range(func(k, v interface{}) bool {
-		if node, ok := v.(*node); ok {
+	nodes.Range(func(_, value interface{}) bool {
+		if node, ok := value.(*node); ok {
 			node.send(m, key, data)
 		}
 

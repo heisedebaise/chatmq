@@ -15,12 +15,19 @@ var mq sync.Map
 var queueOverdueDuration = time.Minute
 
 //Put put.
-func Put(key, data []byte) {
-	bk := bkey(key)
-	put(bk, data)
-	nodes.Range(func(k, v interface{}) bool {
-		if node, ok := v.(*node); ok {
-			node.send(methodPut, bk, data)
+func Put(key string, e interface{}) {
+	data, err := encode(e)
+	if err != nil {
+		logf(LogLevelWarn, "encode %v fail %v", e, err)
+
+		return
+	}
+
+	k := skey(key)
+	put(k, data)
+	nodes.Range(func(_, value interface{}) bool {
+		if node, ok := value.(*node); ok {
+			node.send(methodPut, k, data)
 		}
 
 		return true
@@ -64,8 +71,17 @@ func putq(q *queue, data []byte) {
 }
 
 //Get get.
-func Get(key []byte) ([]byte, bool) {
-	return get(bkey(key))
+func Get(key string, e interface{}) bool {
+	if data, ok := get(skey(key)); ok {
+		err := Decode(data, e)
+		if err == nil {
+			return true
+		}
+
+		logf(LogLevelWarn, "decode fail %v", err)
+	}
+
+	return false
 }
 
 func get(key [16]byte) (data []byte, ok bool) {
