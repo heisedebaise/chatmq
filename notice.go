@@ -20,8 +20,13 @@ func DeleteNotice(key string) {
 }
 
 //SendNotice send notice to other nodes.
-func SendNotice(key string, data []byte) {
-	sends(methodNotice, skey(key), data)
+func SendNotice(key string, e interface{}) {
+	data, err := encode(e)
+	if err == nil {
+		sends(methodNotice, skey(key), data)
+	} else {
+		logf(LogLevelWarn, "encode notice %v fail %v", e, err)
+	}
 }
 
 func notice(key [16]byte, data []byte) bool {

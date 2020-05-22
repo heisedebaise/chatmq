@@ -8,19 +8,7 @@ import (
 )
 
 func TestSendReceive(t *testing.T) {
-	go Cluster(":9371", "secret key", []string{":9371"})
-	time.Sleep(time.Second)
-
-	nodes.Range(func(key, value interface{}) bool {
-		if node, ok := value.(*node); ok {
-			node.lock <- true
-			node.state = 1
-			<-node.lock
-		}
-
-		return true
-	})
-
+	testClusterUp()
 	key := skey("key")
 	testSendReceive(key, bufferSize>>1, time.Second, t)
 	testSendReceive(key, bufferSize, time.Second<<1, t)
@@ -34,6 +22,7 @@ func testSendReceive(key [16]byte, size int, sleep time.Duration, t *testing.T) 
 		data = append(data, byte(rand.Intn(0xff)))
 	}
 
+	testNoSelfListen()
 	sends(methodPut, key, data)
 	time.Sleep(sleep)
 	if d, ok := get(key); !ok || !bytes.Equal(d, data) {
