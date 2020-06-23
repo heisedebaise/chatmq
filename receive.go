@@ -22,7 +22,7 @@ func (rd *receiveData) put(index uint32, b []byte) (done bool) {
 	rd.index++
 	done = rd.index == len(rd.data)
 	<-rd.lock
-	logf(LogLevelDebug, "receive data %t %d/%d %d", done, index, len(rd.data), len(b))
+	debug("receive data %t %d/%d %d", done, index, len(rd.data), len(b))
 
 	return
 }
@@ -37,7 +37,7 @@ func (rd *receiveData) get() (data []byte) {
 		}
 		data = buffer.Bytes()
 	}
-	logf(LogLevelDebug, "get receive data %d %d", rd.index, len(rd.data[0]))
+	debug("get receive data %d %d", rd.index, len(rd.data[0]))
 
 	return
 }
@@ -45,14 +45,14 @@ func (rd *receiveData) get() (data []byte) {
 func receive(conn *net.UDPConn, addr *net.UDPAddr, b []byte) {
 	decrypt, err := decrypt(b)
 	if err != nil {
-		logf(LogLevelWarn, "decrypt fail %v", err)
+		warn("decrypt fail %v", err)
 
 		return
 	}
 
 	length := len(decrypt)
 	if length < minLength {
-		logf(LogLevelWarn, "illegal length %d<%d", length, minLength)
+		warn("illegal length %d<%d", length, minLength)
 
 		return
 	}

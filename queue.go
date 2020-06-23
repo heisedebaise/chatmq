@@ -18,7 +18,7 @@ var queueOverdueDuration = time.Minute
 func Put(key string, e interface{}) {
 	data, err := encode(e)
 	if err != nil {
-		logf(LogLevelWarn, "encode %v fail %v", e, err)
+		warn("encode %v fail %v", e, err)
 
 		return
 	}
@@ -35,7 +35,7 @@ func Put(key string, e interface{}) {
 }
 
 func put(key [16]byte, data []byte) {
-	logf(LogLevelDebug, "put %v %d", key, len(data))
+	debug("put %v %d", key, len(data))
 	if v, ok := mq.Load(key); ok {
 		putv(key, v, data)
 
@@ -78,7 +78,7 @@ func Get(key string, e interface{}) bool {
 			return true
 		}
 
-		logf(LogLevelWarn, "decode fail %v", err)
+		warn("decode fail %v", err)
 	}
 
 	return false

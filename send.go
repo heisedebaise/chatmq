@@ -32,13 +32,13 @@ func sendTo(conn *net.UDPConn, addr *net.UDPAddr, id, data []byte, size, index i
 	p := pack(id, data, uint32(size), uint32(index), m, key)
 	e, err := encrypt(p)
 	if err != nil {
-		logf(LogLevelWarn, "encrypt fail %v", err)
+		warn("encrypt fail %v", err)
 
 		return 0, err
 	}
 
 	n, err := conn.WriteToUDP(e, addr)
-	logf(LogLevelDebug, "send to udp %v %d/%d %d %v", addr, index, size, n, err)
+	debug("send to udp %v %d/%d %d %v", addr, index, size, n, err)
 
 	return n, err
 }

@@ -26,8 +26,24 @@ func SetLogLevel(level LogLevel) {
 	logLevel = level
 }
 
-func logf(level LogLevel, format string, v ...interface{}) {
-	if level >= logLevel {
-		log.Printf("chatmq: "+logLevels[level]+format+"\n", v...)
+func debug(format string, v ...interface{}) {
+	if logLevel <= LogLevelDebug {
+		logf("DEBUG ", format, v...)
 	}
+}
+
+func info(format string, v ...interface{}) {
+	if logLevel <= LogLevelInfo {
+		logf("INFO  ", format, v...)
+	}
+}
+
+func warn(format string, v ...interface{}) {
+	if logLevel <= LogLevelWarn {
+		logf("WARN  ", format, v...)
+	}
+}
+
+func logf(level, format string, v ...interface{}) {
+	log.Printf("chatmq: "+level+format+"\n", v...)
 }

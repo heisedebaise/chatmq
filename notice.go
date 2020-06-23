@@ -25,7 +25,7 @@ func SendNotice(key string, e interface{}) {
 	if err == nil {
 		sends(methodNotice, skey(key), data)
 	} else {
-		logf(LogLevelWarn, "encode notice %v fail %v", e, err)
+		warn("encode notice %v fail %v", e, err)
 	}
 }
 
