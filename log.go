@@ -18,7 +18,6 @@ const (
 //LogLevel log level
 type LogLevel int
 
-var logLevels = []string{"DEBUG ", "INFO  ", "WARN  "}
 var logLevel = LogLevelWarn
 
 //SetLogLevel set log level.
