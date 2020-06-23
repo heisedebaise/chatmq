@@ -18,7 +18,7 @@ const (
 //LogLevel log level
 type LogLevel int
 
-var logLevels = []string{"DEBUG", "INFO ", "WARN "}
+var logLevels = []string{"DEBUG ", "INFO  ", "WARN  "}
 var logLevel = LogLevelWarn
 
 //SetLogLevel set log level.
@@ -28,6 +28,6 @@ func SetLogLevel(level LogLevel) {
 
 func logf(level LogLevel, format string, v ...interface{}) {
 	if level >= logLevel {
-		log.Printf("chatmq: "+logLevels[level]+" "+format+"\n", v...)
+		log.Printf("chatmq: "+logLevels[level]+format+"\n", v...)
 	}
 }
